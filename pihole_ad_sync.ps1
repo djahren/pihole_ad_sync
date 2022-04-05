@@ -1,15 +1,17 @@
+#Ahren Bader-Jarvis - idea from
 #Brandon Lee - Virtualizationhowto.com - v1.1
 #Set variables for the script to run
-$filename = "c:\custom.list"
-$domain = 'mydomain.local'
-$scppw = 'password'
-$piholeconnect = 'dnscopy@pihole01.cloud.local:/home/dnscopy/'
+$Filepath = "C:\inetpub\wwwroot\lists\custom.txt"
 
-#Run the DNS command to export entries to a fi
-Get-DnsServerResourceRecord -ZoneName $domain | select-object @{n='IP';E={$_.recorddata.IPV4Address}}, {$_.hostname+".cloud.local"} | ft -HideTableHeaders | Out-File $filename
-
-#Trim blank lines from the resulting file
-(gc $filename) | ? {$_.trim() -ne "" } | set-content $filename
-
-#Copy the exported DNS entries to Pihole
-Start-Process 'C:\Program Files\PuTTY\pscp.exe' -ArgumentList ("-scp -pw $scppw $filename $piholeconnect")
+#Run the DNS command to export entries to a file
+$Domains = Get-DnsServerZone | Where {-not $_.IsAutoCreated -and $_.ZoneName -notmatch "_msdcs"} | Select -ExpandProperty ZoneName
+$DNSEntries = ""
+foreach($Domain in $Domains){
+    Foreach($DNSEntry in Get-DnsServerResourceRecord -ZoneName $Domain){
+        $IP = $DNSEntry.recordData.IPV4Address
+        if($IP){
+            $DNSEntries += $IP.ToString() + " " + $DNSEntry.Hostname + ".$Domain`n"
+        }
+    }
+}
+$DNSEntries | Out-File $Filepath -Encoding utf8
