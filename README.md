@@ -21,7 +21,7 @@ The file is served by IIS to be available to the secondary script.
 importdns.sh:
 Downloads the file from the first script from each DC.
 Checks if the first file is blank or non-existent.
-Writes the best file to `/etc/pihole/custom.list`.
+Writes the best file to `/etc/pihole/custom.list` and `05-pihole-custom-cname.conf`.
 Restarts pihole DNS.
 
 ## What you need to do
